@@ -50,7 +50,7 @@ def buildCharacter(name):
 
 def printCharacterDefs(n):
 	for i in range(0, n):
-		print(buildCharacter(randomName()))
+		buildCharacter(randomName())
 
 def produceInsult():
 	return random.choice(["Fuck you", "You're so "+random.choice(["stupid", "ignorant", "ugly", "fat", "thin", "arrogant"])+random.choice(["", " that "+random.choice(["when you lay around the house you really lay around the house", "you can't even "+random.choice(["", random.choice(["walk", "talk", "think", "speak", "calculate"])+" "+random.choice(["straight", "correctly", "right", "2 + 2"])]), "even "+random.choice([random.choice([randomName(), "your "+random.choice(["mother", "father", "sister", "brother", "uncle", "aunt"])])+" "+random.choice(["can't stand you", "hates you", "vomits upon seeing you"])])])]), "Go fuck your "+random.choice(["mother", "father", "sister", "brother", "self", "uncle", "aunt"])+random.choice(["", ", you "+random.choice(["shit", "douche", "pussy", "fuck", "cock", "ass", "butt", "anus", "dunder"])+random.choice(["head", "wad", "sucker", "eater", "fuck", "brain", "fucker", "ass", "butt"])])])
