@@ -104,9 +104,14 @@ def buildScene(sceneName):
 				print("\tmenu:")
 				count=len(scenes)
 				if (count>5): count=5
+				existingChoices=[]
+				choice=produceDialogue("player")
 				for j in range(0, (random.choice(list(range(0, count))))+1):
-					print("\t\t\""+produceDialogue("player")+"\":")
+					while choice in existingChoices:
+						choice=produceDialogue("player")
+					print("\t\t\""+choice+"\":")
 					print("\t\t\t"+random.choice(scenes))
+					existingChoices.append(choice)
 	scenes.append(sceneName)
 
 def buildScenes(n):
