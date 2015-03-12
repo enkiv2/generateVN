@@ -113,4 +113,4 @@ def buildScenes(n):
 
 printCharacterDefs(CHARACTER_COUNT)
 buildScenes(SCENE_COUNT)
-print(buildScene("init"))
+buildScene("init")
