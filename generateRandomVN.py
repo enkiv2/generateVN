@@ -77,7 +77,7 @@ def produceDialogue(character):
 
 def buildScene(sceneName):
 	print(sceneName+":")
-	for i in range(0, random.choice(range(1, 500))):
+	for i in range(0, random.choice(range(1, 50))):
 		mode=random.choice(["background", "dialogue", "transition", "characterState", "choose"])
 		if (mode=="background"):
 			print("\tscene bg "+random.choice(backgrounds))
