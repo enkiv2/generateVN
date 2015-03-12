@@ -102,7 +102,9 @@ def buildScene(sceneName):
 		elif (mode=="choose"):
 			if(len(scenes)>0):
 				print("\tmenu:")
-				for j in range(0, (random.choice(list(range(0, len(scenes))))%5)+1):
+				count=len(scenes)
+				if (count>5): count=5
+				for j in range(0, (random.choice(list(range(0, count))))+1):
 					print("\t\t\""+produceDialogue("player")+"\":")
 					print("\t\t\t"+random.choice(scenes))
 	scenes.append(sceneName)
