@@ -1,13 +1,49 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 import string
-import sys
+import sys, os, time
 from random import Random
+from urllib import FancyURLopener
+import urllib2, simplejson
+from PIL import Image
 random=Random()
 gameName=sys.argv[1]
 
+# Start FancyURLopener with defined version 
+class MyOpener(FancyURLopener): 
+    version = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'
+myopener = MyOpener()
+
+def doGoogleImageSearch(searchTerm):
+	searchTerm = searchTerm.replace(' ','%20')
+	count = 0
+	url = ('https://ajax.googleapis.com/ajax/services/search/images?'+'v=1.0&q='+searchTerm+'&start=0&userip=MyIP&imgsz=xlarge|xxlarge|huge')
+	request = urllib2.Request(url, None, {'Referer': 'testing'})
+	response=urllib2.urlopen(request)
+	results = simplejson.load(response)
+	data = results['responseData']
+	dataInfo = data['results']
+	myUrl=dataInfo[0]
+	count = count + 1
+	print ("# "+myUrl['unescapedUrl'])
+	url=myUrl['unescapedUrl']
+	basename=url[url.rfind("/")+1:]
+	if(basename.find("?")>0):
+		basename=basename[:basename.find("?")]
+	myopener.retrieve(url, basename)
+	return basename
+
+def getAndProcessImage(searchTerm, newname):
+	extensionToType={"jpg":"JPEG", "png":"PNG", "jpeg":"JPEG", "gif":"GIF", "GIF":"GIF"}
+	im = Image.open(doGoogleImageSearch(searchTerm))
+	im.thumbnail((800, 600), Image.ANTIALIAS)
+	im.save(newname, extensionToType[newname[newname.rfind(".")+1:]])
+
+
 SCENE_COUNT=50
 CHARACTER_COUNT=10
+BACKGROUND_COUNT=10
 
 moods = ["happy", "sad", "surprised", "normal", "angry"]
 adjectives = ["Happy", "Sad", "Surprised", "Normal", "Angry", "Vicious", "Intelligent", "Carnal", "Torpid", "Squamous", "Rugose", "Turgid", "Wild", "Wonderful", "Worldly", "Forced", "Creamy", "Crunchy", "Chewy", "Red", "Blue", "Green", "Orange", "Yellow", "Indigo", "Violet", "Black", "White", "Lupine", "Lapine", "Feline", "Corvine", "Fortunate", "New", "Old", "Illuminated", "Ancient", "Bavarian", "Wet", "Bad"]
@@ -19,10 +55,19 @@ lastNames = ["Chekhov","Dostoyevsky","Gaunt","Goethe","Gogol","Gorky","Hesse","P
 
 characters=[]
 scenes=[]
-backgrounds=["thing"]
+backgrounds=[]
 
 charactersInScene=[]
 characterMoods={}
+
+def procureBackgrounds(n):
+	for i in range(0, n):
+		name=random.choice(adjectives)+" "+random.choice(nouns)
+		escapedName=("_".join(name.split()))+".jpg"
+		getAndProcessImage(name, gameName+"/game/"+escapedName)
+		print ("image bg "+name+" = \""+escapedName+"\"")
+		backgrounds.append(name)
+		
 
 def randomColor():
 	color=""
@@ -122,6 +167,7 @@ def buildScenes(n):
 	for i in range(0, n):
 		buildScene(random.choice(adjectives)+random.choice(nouns))
 
+procureBackgrounds(BACKGROUND_COUNT)
 printCharacterDefs(CHARACTER_COUNT)
 buildScenes(SCENE_COUNT)
 buildScene("init")
