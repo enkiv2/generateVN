@@ -15,30 +15,53 @@ class MyOpener(FancyURLopener):
     version = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'
 myopener = MyOpener()
 
+MAX_RETRY=5
 def doGoogleImageSearch(searchTerm):
 	searchTerm = searchTerm.replace(' ','%20')
 	count = 0
 	url = ('https://ajax.googleapis.com/ajax/services/search/images?'+'v=1.0&q='+searchTerm+'&start=0&userip=MyIP&imgsz=xlarge|xxlarge|huge')
 	request = urllib2.Request(url, None, {'Referer': 'testing'})
-	response=urllib2.urlopen(request)
-	results = simplejson.load(response)
-	data = results['responseData']
-	dataInfo = data['results']
-	myUrl=dataInfo[0]
-	count = count + 1
-	print ("# "+myUrl['unescapedUrl'])
-	url=myUrl['unescapedUrl']
-	basename=url[url.rfind("/")+1:]
-	if(basename.find("?")>0):
-		basename=basename[:basename.find("?")]
-	myopener.retrieve(url, basename)
+	success = False
+	retries=0
+	while (not success and retries < MAX_RETRY):
+		try:
+			response=urllib2.urlopen(request)
+			results = simplejson.load(response)
+			data = results['responseData']
+			dataInfo = data['results']
+			attempt=random.choice(list(range(0,4)))
+			while not success:
+				try:
+					myUrl=dataInfo[attempt]
+					count = count + 1
+					print ("# "+myUrl['unescapedUrl'])
+					url=myUrl['unescapedUrl']
+					basename=url[url.rfind("/")+1:]
+					if(basename.find("?")>0):
+						basename=basename[:basename.find("?")]
+					myopener.retrieve(url, basename)
+					time.sleep(3)
+					success = True
+				except:
+					attempt=random.choice(list(range(0,4)))
+		except:
+			success=False
+			retries += 1
 	return basename
 
-def getAndProcessImage(searchTerm, newname):
+def getAndProcessImage(searchTerm, newname, opt):
 	extensionToType={"jpg":"JPEG", "png":"PNG", "jpeg":"JPEG", "gif":"GIF", "GIF":"GIF"}
-	im = Image.open(doGoogleImageSearch(searchTerm))
-	im.thumbnail((800, 600), Image.ANTIALIAS)
-	im.save(newname, extensionToType[newname[newname.rfind(".")+1:]])
+	success=False
+	while not success:
+		try:
+			originalName=doGoogleImageSearch(searchTerm+" "+opt)
+			im = Image.open(originalName)
+			im.thumbnail((800, 600), Image.ANTIALIAS)
+			im.save(newname, extensionToType[newname[newname.rfind(".")+1:]])
+			os.remove(originalName)
+			success = True
+		except:
+			success = False
 
 
 SCENE_COUNT=50
@@ -60,12 +83,15 @@ backgrounds=[]
 charactersInScene=[]
 characterMoods={}
 
+def procureImage(name, mode, opt):
+	escapedName=("_".join(name.split()))+".jpg"
+	getAndProcessImage(name, gameName+"/game/"+escapedName, opt)
+	print ("image "+mode+" "+name+" = \""+escapedName+"\"")
+
 def procureBackgrounds(n):
 	for i in range(0, n):
 		name=random.choice(adjectives)+" "+random.choice(nouns)
-		escapedName=("_".join(name.split()))+".jpg"
-		getAndProcessImage(name, gameName+"/game/"+escapedName)
-		print ("image bg "+name+" = \""+escapedName+"\"")
+		procureImage(name, "bg", "")
 		backgrounds.append(name)
 		
 
@@ -89,7 +115,7 @@ def buildCharacter(name):
 			# Somehow produce an image for each mood.
 			# probably based on a corpus of anime eyes/mouths?
 			# Then, superimpose them on a base image of the character and name it escapedName_mood.png
-			print("image "+escapedName+" "+mood+" = \""+escapedName+"_"+mood+".png\"")
+			procureImage(name+" "+mood, "", "has:face")
 		characters.append(escapedName)
 		characterMoods[escapedName] = random.choice(moods)
 
